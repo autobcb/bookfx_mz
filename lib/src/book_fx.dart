@@ -1,6 +1,4 @@
 import 'dart:math';
-import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
-
 import 'package:bookfx_mz/src/book_painter.dart';
 import 'package:bookfx_mz/src/current_paper.dart';
 import 'package:bookfx_mz/src/model/paper_point.dart';
