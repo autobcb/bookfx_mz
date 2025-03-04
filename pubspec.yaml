@@ -1,8 +1,8 @@
 name: bookfx_mz
 description: Enhanced version of bookfx with additional features and bug fixes
 version: 1.0.0
-homepage: https://github.com/lixp185/bookfx
-repository: https://github.com/lixp185/bookfx
+homepage: https://github.com/autobcb/bookfx_mz.git
+repository: https://github.com/autobcb/bookfx_mz.git
 
 environment:
   sdk: '>=3.3.4 <4.0.0'
