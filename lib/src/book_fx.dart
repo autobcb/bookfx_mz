@@ -40,8 +40,7 @@ class BookFx extends StatefulWidget {
   /// 上一页回调
   final Function(int index)? lastCallBack;
 
-  /// 上一页回调
-  final Function()? warnCallBack;
+  final Function(bool isnext)? warnCallBack;
 
   final BookController controller;
 
@@ -259,11 +258,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
         },
         onPanEnd: (d) {
           if (downPos.dx < size.width / 2 && !widget.controller.canlast) {
-            widget.warnCallBack?.call();
+            widget.warnCallBack?.call(false);
             return;
           }
           if (downPos.dx > size.width / 2 && !widget.controller.cannext) {
-            widget.warnCallBack?.call();
+            widget.warnCallBack?.call(true);
             return;
           }
           if (isAnimation) {
