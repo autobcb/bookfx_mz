@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:nativewrappers/_internal/vm/lib/ffi_allocation_patch.dart';
 
 import 'package:bookfx_mz/src/book_painter.dart';
 import 'package:bookfx_mz/src/current_paper.dart';
@@ -39,6 +40,9 @@ class BookFx extends StatefulWidget {
   /// 上一页回调
   final Function(int index)? lastCallBack;
 
+  /// 上一页回调
+  final Function()? warnCallBack;
+
   final BookController controller;
 
   const BookFx({
@@ -50,6 +54,7 @@ class BookFx extends StatefulWidget {
     this.pageCount = 10000,
     this.nextCallBack,
     this.lastCallBack,
+    this.warnCallBack,
     required this.controller,
     Key? key,
   }) : super(key: key);
@@ -254,9 +259,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
         },
         onPanEnd: (d) {
           if (downPos.dx < size.width / 2 && !widget.controller.canlast) {
+            widget.warnCallBack?.call();
             return;
           }
           if (downPos.dx > size.width / 2 && !widget.controller.cannext) {
+            widget.warnCallBack?.call();
             return;
           }
           if (isAnimation) {
