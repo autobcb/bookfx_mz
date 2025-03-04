@@ -205,6 +205,12 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           downPos = d.localPosition;
         },
         onPanUpdate: (d) {
+          if (downPos.dx < size.width / 2 && !widget.controller.canlast) {
+            return;
+          }
+          if (downPos.dx > size.width / 2 && !widget.controller.cannext) {
+            return;
+          }
           if (isAnimation) {
             return;
           }
@@ -247,6 +253,12 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           }
         },
         onPanEnd: (d) {
+          if (downPos.dx < size.width / 2 && !widget.controller.canlast) {
+            return;
+          }
+          if (downPos.dx > size.width / 2 && !widget.controller.cannext) {
+            return;
+          }
           if (isAnimation) {
             return;
           }
