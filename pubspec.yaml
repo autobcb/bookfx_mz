@@ -1,0 +1,25 @@
+name: bookfx_mz
+description: Enhanced version of bookfx with additional features and bug fixes
+version: 1.0.0
+homepage: https://github.com/lixp185/bookfx
+repository: https://github.com/lixp185/bookfx
+
+environment:
+  sdk: '>=3.3.4 <4.0.0'
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+
+# For information on the generic Dart part of this file, see the
+# following page: https://dart.dev/tools/pub/pubspec
+
+# The following section is specific to Flutter.
+flutter:
+
