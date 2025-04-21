@@ -86,7 +86,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
 
     _controller = AnimationController(
       vsync: this,
-      duration: widget.duration ?? const Duration(milliseconds: 800)
+      duration: widget.duration ?? const Duration(milliseconds: 300)
     );
 
     _controller?.addListener(() {
@@ -209,10 +209,14 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           downPos = d.localPosition;
         },
         onPanUpdate: (d) {
-          if (downPos.dx < size.width / 2 && !widget.controller.canlast) {
+          var width=size.width / 2;
+          if(width  > 100){
+            width=100;
+          }
+          if (downPos.dx < width && !widget.controller.canlast) {
             return;
           }
-          if (downPos.dx > size.width / 2 && !widget.controller.cannext) {
+          if (downPos.dx >width && !widget.controller.cannext) {
             return;
           }
           if (isAnimation) {
@@ -229,7 +233,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
               move.dy < 0) {
             return;
           }
-          if (downPos.dx < size.width / 2) {
+          if (downPos.dx < width) {
             return;
           }
           if (isAlPath == true) {
@@ -257,11 +261,15 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           }
         },
         onPanEnd: (d) {
-          if (downPos.dx < size.width / 2 && !widget.controller.canlast) {
+          var width=size.width / 2;
+          if(width  > 100){
+            width=100;
+          }
+          if (downPos.dx < width && !widget.controller.canlast) {
             widget.lastwarnCallBack?.call();
             return;
           }
-          if (downPos.dx > size.width / 2 && !widget.controller.cannext) {
+          if (downPos.dx > width && !widget.controller.cannext) {
             widget.nextwarnCallBack?.call();
             return;
           }
@@ -270,7 +278,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           }
 
           /// 手指首次触摸屏幕左侧区域
-          if (downPos.dx < size.width / 2) {
+          if (downPos.dx < width) {
             if (widget.controller.currentIndex == 0) {
               widget.lastCallBack?.call(widget.controller.currentIndex);
               return;
