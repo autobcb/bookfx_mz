@@ -210,9 +210,6 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
         },
         onPanUpdate: (d) {
           var width=size.width / 2;
-          if(width  > 100){
-            width=100;
-          }
           if (downPos.dx < width && !widget.controller.canlast) {
             return;
           }
@@ -254,7 +251,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           // currentA = Point(move.dx, size.height - 1);
           // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
 
-          if ((size.width - move.dx) / size.width > 1 / 3) {
+          var w=size.width  / 3;
+          if(w > 100){
+            w=100;
+          }
+          if ((size.width - move.dx) > w) {
             isNext = true;
           } else {
             isNext = false;
@@ -262,9 +263,6 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
         },
         onPanEnd: (d) {
           var width=size.width / 2;
-          if(width  > 100){
-            width=100;
-          }
           if (downPos.dx < width && !widget.controller.canlast) {
             widget.lastwarnCallBack?.call();
             return;
