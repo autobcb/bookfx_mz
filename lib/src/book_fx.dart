@@ -187,133 +187,152 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
     return SizedBox(
       width: size.width,
       height: size.height,
-      child: GestureDetector(
-        child: Stack(
-          children: [
-            widget.controller.currentIndex == widget.pageCount - 1
-                ? const SizedBox()
-            // 下一页
-                : widget.nextPage(widget.controller.currentIndex + 1),
-            // // 当前页
-            ClipPath(
-              child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
-              clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
-            ),
-
-
-            CustomPaint(
-              size: size,
-              painter: BookPainter(
-                _p,
-                widget.currentBgColor,
+      child: LayoutBuilder(builder: (context, dimens){
+        return GestureDetector(
+          child: Stack(
+            children: [
+              widget.controller.currentIndex == widget.pageCount - 1
+                  ? const SizedBox()
+              // 下一页
+                  : _type == 2 ?widget.nextPage(widget.controller.currentIndex ):widget.nextPage(widget.controller.currentIndex + 1),
+              // // 当前页
+              ClipPath(
+                child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
+                clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
               ),
-            ),
-          ],
-        ),
-        onPanDown: (d) {
-          downPos = d.localPosition;
-        },
-        onPanUpdate: (d) {
-          if (isAnimation) {
-            return;
-          }
-          if(_type == 0){
-            if(downPos.dx > d.localPosition.dx){
-               setState(() {
-                 _type=1;
-               });
-            }else{
+
+
+              CustomPaint(
+                size: size,
+                painter: BookPainter(
+                  _p,
+                  widget.currentBgColor,
+                ),
+              ),
+            ],
+          ),
+          onPanDown: (d) {
+            downPos = d.localPosition;
+          },
+          onPanUpdate: (d) {
+            if (isAnimation) {
+              return;
+            }
+            if(_type == 0){
+              if(downPos.dx > d.localPosition.dx){
+                setState(() {
+                  _type=1;
+                });
+              }else{
+                setState(() {
+                  _type=2;
+                });
+              }
+            }
+
+            if(_type == 1){
+              if(!widget.controller.cannext ||  widget.controller.currentIndex >= widget.pageCount - 1){
+                return;
+              }
+            }
+
+            if(_type == 2){
+              if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
+                return;
+              }
+            }
+
+            var move = d.localPosition;
+            // 临界值取消更新
+            if (move.dx >= size.width ||
+                move.dx < 0 ||
+                move.dy >= size.height ||
+                move.dy < 0) {
+              return;
+            }
+            if (isAlPath == true) {
               setState(() {
-                _type=2;
+                isAlPath = false;
               });
             }
-          }
-
-          if(_type == 1){
-            if(!widget.controller.cannext ||  widget.controller.currentIndex >= widget.pageCount - 1){
-              return;
-            }
-          }
-
-          if(_type == 2){
-            if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
-              return;
-            }
-          }
-
-          var move = d.localPosition;
-          // 临界值取消更新
-          if (move.dx >= size.width ||
-              move.dx < 0 ||
-              move.dy >= size.height ||
-              move.dy < 0) {
-            return;
-          }
-          if (isAlPath == true) {
-            setState(() {
-              isAlPath = false;
-            });
-          }
-          if(_type == 1){
-            if (downPos.dy > size.height / 3 &&
-                downPos.dy < size.height * 2 / 3) {
-              // 横向翻页
+            if(_type == 1){
+              if (downPos.dy > size.height / 3 &&
+                  downPos.dy < size.height * 2 / 3) {
+                // 横向翻页
+                currentA = Point(move.dx, size.height - 1);
+                _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+              } else {
+                // 右下角翻页
+                currentA = Point(move.dx, move.dy);
+                _p.value = PaperPoint(Point(move.dx, move.dy), size);
+              }
+            }else{
               currentA = Point(move.dx, size.height - 1);
               _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-            } else {
-              // 右下角翻页
-              currentA = Point(move.dx, move.dy);
-              _p.value = PaperPoint(Point(move.dx, move.dy), size);
             }
-          }else{
-            currentA = Point(move.dx, size.height - 1);
-            _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-          }
-          // currentA = Point(move.dx, size.height - 1);
-          // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+            // currentA = Point(move.dx, size.height - 1);
+            // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
 
-        },
-        onPanEnd: (d) {
-          if (isAnimation) {
-            return;
-          }
-
-          if(_type == 1){
-            if(!widget.controller.cannext  ||  widget.controller.currentIndex >= widget.pageCount - 1){
-              widget.nextwarnCallBack?.call();
-              _type =0;
+          },
+          onPanEnd: (d) {
+            if (isAnimation) {
               return;
             }
-          }
+            print("end");
 
-          if(_type == 2){
-            if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
-              widget.lastwarnCallBack?.call();
-              _type =0;
-              return;
+            if(_type == 1){
+              print(d.localPosition.dx / dimens.maxWidth );
+              if(d.localPosition.dx / dimens.maxWidth > 0.95){
+                _type =0;
+                return;
+              }
+              if(!widget.controller.cannext  ||  widget.controller.currentIndex >= widget.pageCount - 1){
+                widget.nextwarnCallBack?.call();
+                _type =0;
+                return;
+              }
+
             }
-          }
 
-          /// 手指首次触摸屏幕左侧区域
-          if (_type == 2) {
-            setState(() {
-              isAlPath = false;
+            if(_type == 2){
+              if(d.localPosition.dx / dimens.maxWidth < 0.5){
+                setState(() {
+                  _type =0;
+                  _p.value= PaperPoint(
+                      Point(widget.size.width, widget.size.height),
+                      widget.size
+                  );
+                });
+                return;
+              }
+              if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
+                widget.lastwarnCallBack?.call();
+                _type =0;
+                return;
+              }
+            }
+
+            /// 手指首次触摸屏幕左侧区域
+            if (_type == 2) {
+              setState(() {
+                isAlPath = false;
+                isAnimation = true;
+                _controller?.forward(
+                  from: 0,
+                );
+              });
+            }else{
+              setState(() {
+                isAlPath = false;
+              });
               isAnimation = true;
               _controller?.forward(
                 from: 0,
               );
-            });
-          }else{
-            setState(() {
-              isAlPath = false;
-            });
-            isAnimation = true;
-            _controller?.forward(
-              from: 0,
-            );
-          }
-        },
-      ),
+            }
+          },
+        );
+      })
     );
   }
 
