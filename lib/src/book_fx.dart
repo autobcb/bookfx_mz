@@ -12,10 +12,6 @@ import 'book_controller.dart';
 class BookFx extends StatefulWidget {
   /// 翻页时长
   final Duration? duration;
-
-  /// 书籍区域
-  final Size size;
-
   /// 一般情况页面布局是固定的 变化的是布局当中的内容
   /// 不过若是页面之间有布局不同时，须同时更新布局
   /// 当前页布局
@@ -45,7 +41,6 @@ class BookFx extends StatefulWidget {
 
   const BookFx({
     this.duration,
-    required this.size,
     required this.currentPage,
     required this.nextPage,
     this.currentBgColor,
@@ -63,7 +58,7 @@ class BookFx extends StatefulWidget {
 }
 
 class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
-  late Size size = widget.size;
+  Size size =Size(0, 0) ;
   late Offset downPos;
   Point<double> currentA = const Point(0, 0);
 
@@ -76,13 +71,8 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // 修改初始化位置，确保是有效值
-    _p = ValueNotifier(
-        PaperPoint(
-            Point(widget.size.width, widget.size.height),
-            widget.size
-        )
-    );
+
+
 
     _controller = AnimationController(
         vsync: this,
@@ -128,11 +118,6 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       }
     });
 
-    // build完毕初始化首页
-    // 当前页码
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _p.value = PaperPoint(Point(size.width, size.height), size);
-    });
     widget.controller.addListener(() {
       if (isAnimation == true) {
         // 翻页动画正在执行
@@ -184,156 +169,164 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size.width,
-      height: size.height,
-      child: LayoutBuilder(builder: (context, dimens){
-        return GestureDetector(
-          child: Stack(
-            children: [
-              widget.controller.currentIndex == widget.pageCount - 1
-                  ? const SizedBox()
-              // 下一页
-                  : _type == 2 ?widget.nextPage(widget.controller.currentIndex ):widget.nextPage(widget.controller.currentIndex + 1),
-              // // 当前页
-              ClipPath(
-                child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
-                clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
+    return LayoutBuilder(builder: (context, dimens){
+      if(dimens.maxWidth != size.width || dimens.maxHeight != size.height){
+        size= Size(dimens.maxWidth,dimens.maxHeight);
+        _p = ValueNotifier(
+            PaperPoint(
+                Point(size.width, size.height),
+                size
+            )
+        );
+
+      }
+
+
+      return GestureDetector(
+        child: Stack(
+          children: [
+            widget.controller.currentIndex == widget.pageCount - 1
+                ? const SizedBox()
+            // 下一页
+                : _type == 2 ?widget.nextPage(widget.controller.currentIndex ):widget.nextPage(widget.controller.currentIndex + 1),
+            // // 当前页
+            ClipPath(
+              child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
+              clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
+            ),
+
+
+            CustomPaint(
+              size: size,
+              painter: BookPainter(
+                _p,
+                widget.currentBgColor,
               ),
-
-
-              CustomPaint(
-                size: size,
-                painter: BookPainter(
-                  _p,
-                  widget.currentBgColor,
-                ),
-              ),
-            ],
-          ),
-          onPanDown: (d) {
-            downPos = d.localPosition;
-          },
-          onPanUpdate: (d) {
-            if (isAnimation) {
-              return;
-            }
-            if(_type == 0){
-              if(downPos.dx > d.localPosition.dx){
-                setState(() {
-                  _type=1;
-                });
-              }else{
-                setState(() {
-                  _type=2;
-                });
-              }
-            }
-
-            if(_type == 1){
-              if(!widget.controller.cannext ||  widget.controller.currentIndex >= widget.pageCount - 1){
-                return;
-              }
-            }
-
-            if(_type == 2){
-              if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
-                return;
-              }
-            }
-
-            var move = d.localPosition;
-            // 临界值取消更新
-            if (move.dx >= size.width ||
-                move.dx < 0 ||
-                move.dy >= size.height ||
-                move.dy < 0) {
-              return;
-            }
-            if (isAlPath == true) {
+            ),
+          ],
+        ),
+        onPanDown: (d) {
+          downPos = d.localPosition;
+        },
+        onPanUpdate: (d) {
+          if (isAnimation) {
+            return;
+          }
+          if(_type == 0){
+            if(downPos.dx > d.localPosition.dx){
               setState(() {
-                isAlPath = false;
+                _type=1;
+              });
+            }else{
+              setState(() {
+                _type=2;
               });
             }
-            if(_type == 1){
-              if (downPos.dy > size.height / 3 &&
-                  downPos.dy < size.height * 2 / 3) {
-                // 横向翻页
-                currentA = Point(move.dx, size.height - 1);
-                _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-              } else {
-                // 右下角翻页
-                currentA = Point(move.dx, move.dy);
-                _p.value = PaperPoint(Point(move.dx, move.dy), size);
-              }
-            }else{
+          }
+
+          if(_type == 1){
+            if(!widget.controller.cannext ||  widget.controller.currentIndex >= widget.pageCount - 1){
+              return;
+            }
+          }
+
+          if(_type == 2){
+            if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
+              return;
+            }
+          }
+
+          var move = d.localPosition;
+          // 临界值取消更新
+          if (move.dx >= size.width ||
+              move.dx < 0 ||
+              move.dy >= size.height ||
+              move.dy < 0) {
+            return;
+          }
+          if (isAlPath == true) {
+            setState(() {
+              isAlPath = false;
+            });
+          }
+          if(_type == 1){
+            if (downPos.dy > size.height / 3 &&
+                downPos.dy < size.height * 2 / 3) {
+              // 横向翻页
               currentA = Point(move.dx, size.height - 1);
               _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+            } else {
+              // 右下角翻页
+              currentA = Point(move.dx, move.dy);
+              _p.value = PaperPoint(Point(move.dx, move.dy), size);
             }
-            // currentA = Point(move.dx, size.height - 1);
-            // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+          }else{
+            currentA = Point(move.dx, size.height - 1);
+            _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+          }
+          // currentA = Point(move.dx, size.height - 1);
+          // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
 
-          },
-          onPanEnd: (d) {
-            if (isAnimation) {
+        },
+        onPanEnd: (d) {
+          if (isAnimation) {
+            return;
+          }
+          print("end");
+
+          if(_type == 1){
+            print(d.localPosition.dx / dimens.maxWidth );
+            if(d.localPosition.dx / dimens.maxWidth > 0.95){
+              _type =0;
               return;
             }
-            print("end");
-
-            if(_type == 1){
-              print(d.localPosition.dx / dimens.maxWidth );
-              if(d.localPosition.dx / dimens.maxWidth > 0.95){
-                _type =0;
-                return;
-              }
-              if(!widget.controller.cannext  ||  widget.controller.currentIndex >= widget.pageCount - 1){
-                widget.nextwarnCallBack?.call();
-                _type =0;
-                return;
-              }
-
+            if(!widget.controller.cannext  ||  widget.controller.currentIndex >= widget.pageCount - 1){
+              widget.nextwarnCallBack?.call();
+              _type =0;
+              return;
             }
 
-            if(_type == 2){
-              if(d.localPosition.dx / dimens.maxWidth < 0.5){
-                setState(() {
-                  _type =0;
-                  _p.value= PaperPoint(
-                      Point(widget.size.width, widget.size.height),
-                      widget.size
-                  );
-                });
-                return;
-              }
-              if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
-                widget.lastwarnCallBack?.call();
-                _type =0;
-                return;
-              }
-            }
+          }
 
-            /// 手指首次触摸屏幕左侧区域
-            if (_type == 2) {
+          if(_type == 2){
+            if(d.localPosition.dx / dimens.maxWidth < 0.5){
               setState(() {
-                isAlPath = false;
-                isAnimation = true;
-                _controller?.forward(
-                  from: 0,
+                _type =0;
+                _p.value= PaperPoint(
+                    Point(dimens.maxWidth, dimens.maxHeight),
+                    Size(dimens.maxWidth,dimens.maxHeight)
                 );
               });
-            }else{
-              setState(() {
-                isAlPath = false;
-              });
+              return;
+            }
+            if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
+              widget.lastwarnCallBack?.call();
+              _type =0;
+              return;
+            }
+          }
+
+          /// 手指首次触摸屏幕左侧区域
+          if (_type == 2) {
+            setState(() {
+              isAlPath = false;
               isAnimation = true;
               _controller?.forward(
                 from: 0,
               );
-            }
-          },
-        );
-      })
-    );
+            });
+          }else{
+            setState(() {
+              isAlPath = false;
+            });
+            isAnimation = true;
+            _controller?.forward(
+              from: 0,
+            );
+          }
+        },
+      );
+    });
   }
 
   void last() {
