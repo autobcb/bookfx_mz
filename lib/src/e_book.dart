@@ -90,7 +90,7 @@ class _EBookState extends State<EBook> {
   Widget build(BuildContext context) {
     return isOver
         ? BookFx(
-            size: Size(MediaQuery.of(context).size.width, widget.maxHeight),
+
             pageCount: allPages.length - 1,
             currentBgColor: Colors.yellow.shade800,
             nextCallBack: (index) {
