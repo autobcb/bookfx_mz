@@ -272,10 +272,8 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           if (isAnimation) {
             return;
           }
-          print("end");
 
           if(_type == 1){
-            print(d.localPosition.dx / dimens.maxWidth );
             if(d.localPosition.dx / dimens.maxWidth > 0.95){
               _type =0;
               return;
