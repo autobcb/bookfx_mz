@@ -89,14 +89,13 @@ class _MyHomePageState extends State<MyHomePage> {
               width: 500,
               height: 200,
               child: BookFx(
-                size: const Size(500, 200),
                 pageCount: 5,
                 currentBgColor: Colors.grey.shade200,
                 duration: const Duration(milliseconds: 800),
                 currentPage: (index) => Container(
                   color: Colors.white,
                   child: Center(
-                    child: Text(
+                    child: SelectableText(
                       'Page ${index + 1}',
                       style: const TextStyle(fontSize: 24),
                     ),
@@ -105,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 nextPage: (index) => Container(
                   color: Colors.white,
                   child: Center(
-                    child: Text(
+                    child: SelectableText(
                       'Page ${index + 1}',
                       style: const TextStyle(fontSize: 24),
                     ),

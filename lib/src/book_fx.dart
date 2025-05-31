@@ -185,17 +185,21 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       return GestureDetector(
         child: Stack(
           children: [
+            if(_type != 0)
             widget.controller.currentIndex == widget.pageCount - 1
                 ? const SizedBox()
             // 下一页
                 : _type == 2 ?widget.nextPage(widget.controller.currentIndex ):widget.nextPage(widget.controller.currentIndex + 1),
             // // 当前页
+            if(_type == 0)
+              widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
+            if(_type != 0)
             ClipPath(
               child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
               clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
             ),
 
-
+            if(_type != 0)
             CustomPaint(
               size: size,
               painter: BookPainter(

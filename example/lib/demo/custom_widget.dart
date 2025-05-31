@@ -24,8 +24,7 @@ class _CustomWidgetState extends State<CustomWidget> {
   Widget build(BuildContext context) {
     return Placeholder(
       child: BookFx(
-          size: Size(MediaQuery.of(context).size.width,
-              MediaQuery.of(context).size.height),
+
           pageCount: images.length,
           currentPage: (index) {
             return Image.asset(
