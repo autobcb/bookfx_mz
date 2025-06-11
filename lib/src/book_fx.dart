@@ -71,9 +71,6 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
-
-
-
     _controller = AnimationController(
         vsync: this,
         duration: widget.duration ?? const Duration(milliseconds: 300)
@@ -162,10 +159,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
     _controller?.dispose();
     super.dispose();
   }
-
+  Offset _lastPointerDownPosition = Offset.zero;
   int _type = 0; // 是否翻页到下一页
   bool isAlPath = true; //
   bool isAnimation = false; // 是否正在执行翻页
+  bool _isonPointerDown=false;
 
   @override
   Widget build(BuildContext context) {
@@ -182,153 +180,190 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       }
 
 
-      return GestureDetector(
-        child: Stack(
+      return  Listener(
+        onPointerDown: (event){
+          _lastPointerDownPosition = event.position;
+          _isonPointerDown=false;
+          onPanDown(DragDownDetails(
+            globalPosition: event.position,
+            localPosition: event.localPosition,
+          ));
+        },
+        onPointerMove: (event){
+          if(_isonPointerDown){
+            onPanUpdate(DragUpdateDetails(
+              globalPosition: event.position,
+              localPosition: event.localPosition,
+            ));
+            return;
+          }
+          final distance = (event.position - _lastPointerDownPosition).distance;
+          if(distance > 10){
+            _isonPointerDown=true;
+            onPanUpdate(DragUpdateDetails(
+              globalPosition: event.position,
+              localPosition: event.localPosition,
+            ));
+          }
+        },
+        onPointerUp: (event){
+          if(_isonPointerDown){
+            //_isonPointerDown=false;
+            onPanEnd(DragEndDetails(
+              globalPosition: event.position,
+              localPosition: event.localPosition,
+            ),dimens);
+          }
+        },
+        child:  Stack(
           children: [
             if(_type != 0)
-            widget.controller.currentIndex == widget.pageCount - 1
-                ? const SizedBox()
-            // 下一页
-                : _type == 2 ?widget.nextPage(widget.controller.currentIndex ):widget.nextPage(widget.controller.currentIndex + 1),
+              widget.controller.currentIndex == widget.pageCount - 1
+                  ? const SizedBox()
+              // 下一页
+                  : _type == 2 ?widget.nextPage(widget.controller.currentIndex ):widget.nextPage(widget.controller.currentIndex + 1),
             // // 当前页
             if(_type == 0)
               widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
             if(_type != 0)
-            ClipPath(
-              child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
-              clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
-            ),
+              ClipPath(
+                child: widget.currentPage(_type == 2 && widget.controller.currentIndex>0 ?widget.controller.currentIndex-1:widget.controller.currentIndex),
+                clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
+              ),
 
             if(_type != 0)
-            CustomPaint(
-              size: size,
-              painter: BookPainter(
-                _p,
-                widget.currentBgColor,
+              CustomPaint(
+                size: size,
+                painter: BookPainter(
+                  _p,
+                  widget.currentBgColor,
+                ),
               ),
-            ),
           ],
         ),
-        onPanDown: (d) {
-          downPos = d.localPosition;
-        },
-        onPanUpdate: (d) {
-          if (isAnimation) {
-            return;
-          }
-          if(_type == 0){
-            if(downPos.dx > d.localPosition.dx){
-              setState(() {
-                _type=1;
-              });
-            }else{
-              setState(() {
-                _type=2;
-              });
-            }
-          }
-
-          if(_type == 1){
-            if(!widget.controller.cannext ||  widget.controller.currentIndex >= widget.pageCount - 1){
-              return;
-            }
-          }
-
-          if(_type == 2){
-            if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
-              return;
-            }
-          }
-
-          var move = d.localPosition;
-          // 临界值取消更新
-          if (move.dx >= size.width ||
-              move.dx < 0 ||
-              move.dy >= size.height ||
-              move.dy < 0) {
-            return;
-          }
-          if (isAlPath == true) {
-            setState(() {
-              isAlPath = false;
-            });
-          }
-          if(_type == 1){
-            if (downPos.dy > size.height / 3 &&
-                downPos.dy < size.height * 2 / 3) {
-              // 横向翻页
-              currentA = Point(move.dx, size.height - 1);
-              _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-            } else {
-              // 右下角翻页
-              currentA = Point(move.dx, move.dy);
-              _p.value = PaperPoint(Point(move.dx, move.dy), size);
-            }
-          }else{
-            currentA = Point(move.dx, size.height - 1);
-            _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-          }
-          // currentA = Point(move.dx, size.height - 1);
-          // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
-
-        },
-        onPanEnd: (d) {
-          if (isAnimation) {
-            return;
-          }
-
-          if(_type == 1){
-            if(d.localPosition.dx / dimens.maxWidth > 0.95){
-              _type =0;
-              return;
-            }
-            if(!widget.controller.cannext  ||  widget.controller.currentIndex >= widget.pageCount - 1){
-              widget.nextwarnCallBack?.call();
-              _type =0;
-              return;
-            }
-
-          }
-
-          if(_type == 2){
-            if(d.localPosition.dx / dimens.maxWidth < 0.5){
-              setState(() {
-                _type =0;
-                _p.value= PaperPoint(
-                    Point(dimens.maxWidth, dimens.maxHeight),
-                    Size(dimens.maxWidth,dimens.maxHeight)
-                );
-              });
-              return;
-            }
-            if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
-              widget.lastwarnCallBack?.call();
-              _type =0;
-              return;
-            }
-          }
-
-          /// 手指首次触摸屏幕左侧区域
-          if (_type == 2) {
-            setState(() {
-              isAlPath = false;
-              isAnimation = true;
-              _controller?.forward(
-                from: 0,
-              );
-            });
-          }else{
-            setState(() {
-              isAlPath = false;
-            });
-            isAnimation = true;
-            _controller?.forward(
-              from: 0,
-            );
-          }
-        },
       );
     });
+  }
+
+  void onPanDown(DragDownDetails d){
+    downPos = d.localPosition;
+  }
+
+  void onPanUpdate(DragUpdateDetails d) {
+    if (isAnimation) {
+      return;
+    }
+    if(_type == 0){
+      if(downPos.dx > d.localPosition.dx){
+        setState(() {
+          _type=1;
+        });
+      }else{
+        setState(() {
+          _type=2;
+        });
+      }
+    }
+
+    if(_type == 1){
+      if(!widget.controller.cannext ||  widget.controller.currentIndex >= widget.pageCount - 1){
+        return;
+      }
+    }
+
+    if(_type == 2){
+      if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
+        return;
+      }
+    }
+
+    var move = d.localPosition;
+    // 临界值取消更新
+    if (move.dx >= size.width ||
+        move.dx < 0 ||
+        move.dy >= size.height ||
+        move.dy < 0) {
+      return;
+    }
+    if (isAlPath == true) {
+      setState(() {
+        isAlPath = false;
+      });
+    }
+    if(_type == 1){
+      if (downPos.dy > size.height / 3 &&
+          downPos.dy < size.height * 2 / 3) {
+        // 横向翻页
+        currentA = Point(move.dx, size.height - 1);
+        _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+      } else {
+        // 右下角翻页
+        currentA = Point(move.dx, move.dy);
+        _p.value = PaperPoint(Point(move.dx, move.dy), size);
+      }
+    }else{
+      currentA = Point(move.dx, size.height - 1);
+      _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+    }
+    // currentA = Point(move.dx, size.height - 1);
+    // _p.value = PaperPoint(Point(move.dx, size.height - 1), size);
+
+  }
+
+  void onPanEnd(DragEndDetails d ,dimens) {
+    if (isAnimation) {
+      return;
+    }
+
+    if(_type == 1){
+      if(d.localPosition.dx / dimens.maxWidth > 0.95){
+        _type =0;
+        return;
+      }
+      if(!widget.controller.cannext  ||  widget.controller.currentIndex >= widget.pageCount - 1){
+        widget.nextwarnCallBack?.call();
+        _type =0;
+        return;
+      }
+
+    }
+
+    if(_type == 2){
+      if(d.localPosition.dx / dimens.maxWidth < 0.5){
+        setState(() {
+          _type =0;
+          _p.value= PaperPoint(
+              Point(dimens.maxWidth, dimens.maxHeight),
+              Size(dimens.maxWidth,dimens.maxHeight)
+          );
+        });
+        return;
+      }
+      if(!widget.controller.canlast  ||  widget.controller.currentIndex <= 0){
+        widget.lastwarnCallBack?.call();
+        _type =0;
+        return;
+      }
+    }
+
+    /// 手指首次触摸屏幕左侧区域
+    if (_type == 2) {
+      setState(() {
+        isAlPath = false;
+        isAnimation = true;
+        _controller?.forward(
+          from: 0,
+        );
+      });
+    }else{
+      setState(() {
+        isAlPath = false;
+      });
+      isAnimation = true;
+      _controller?.forward(
+        from: 0,
+      );
+    }
   }
 
   void last() {
