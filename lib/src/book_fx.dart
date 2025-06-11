@@ -10,6 +10,9 @@ import 'book_controller.dart';
 /// 创建时间： 2022/8/1 16:05
 /// 类介绍：模拟书籍翻页效果
 class BookFx extends StatefulWidget {
+
+  final bool Function()? canturn;
+
   /// 翻页时长
   final Duration? duration;
   /// 一般情况页面布局是固定的 变化的是布局当中的内容
@@ -50,6 +53,7 @@ class BookFx extends StatefulWidget {
     this.nextwarnCallBack,
     this.lastwarnCallBack,
     required this.controller,
+    this.canturn=null,
     Key? key,
   }) : super(key: key);
 
@@ -182,6 +186,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
 
       return  Listener(
         onPointerDown: (event){
+          if(widget.canturn != null){
+            if(widget.canturn!() == false){
+              return;
+            }
+          }
           _lastPointerDownPosition = event.position;
           _isonPointerDown=false;
           onPanDown(DragDownDetails(
@@ -190,6 +199,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           ));
         },
         onPointerMove: (event){
+          if(widget.canturn != null){
+            if(widget.canturn!() == false){
+              return;
+            }
+          }
           if(_isonPointerDown){
             onPanUpdate(DragUpdateDetails(
               globalPosition: event.position,
@@ -207,6 +221,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
           }
         },
         onPointerUp: (event){
+          if(widget.canturn != null){
+            if(widget.canturn!() == false){
+              return;
+            }
+          }
           if(_isonPointerDown){
             //_isonPointerDown=false;
             onPanEnd(DragEndDetails(
