@@ -168,6 +168,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   bool isAlPath = true; //
   bool isAnimation = false; // 是否正在执行翻页
   bool _isonPointerDown=false;
+  bool _needstop=false;
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +192,11 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
               return;
             }
           }
+          if(event.position.dx  < 40){
+            _needstop=true;
+            return;
+          }
+          _needstop=false;
           _lastPointerDownPosition = event.position;
           _isonPointerDown=false;
           onPanDown(DragDownDetails(
@@ -203,6 +209,9 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             if(widget.canturn!() == false){
               return;
             }
+          }
+          if(_needstop){
+            return;
           }
           if(_isonPointerDown){
             onPanUpdate(DragUpdateDetails(
@@ -225,6 +234,9 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             if(widget.canturn!() == false){
               return;
             }
+          }
+          if(_needstop){
+            return;
           }
           if(_isonPointerDown){
             //_isonPointerDown=false;
