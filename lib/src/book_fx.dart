@@ -360,7 +360,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
     }
 
     if(_type == 2){
-      if(d.localPosition.dx / dimens.maxWidth < 0.5){
+      if(d.localPosition.dx / dimens.maxWidth < 0.2){
         setState(() {
           _type =0;
           _p.value= PaperPoint(
@@ -420,4 +420,5 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
       from: 0,
     );
   }
+
 }
