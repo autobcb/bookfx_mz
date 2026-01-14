@@ -31,6 +31,8 @@ class BookFx extends StatefulWidget {
   /// 书籍页数
   final int pageCount;
 
+  final double opacity;
+
   /// 下一页回调
   final Function(int index)? nextCallBack;
 
@@ -48,6 +50,7 @@ class BookFx extends StatefulWidget {
     required this.nextPage,
     this.currentBgColor,
     this.pageCount = 10000,
+    this.opacity = 0,
     this.nextCallBack,
     this.lastCallBack,
     this.nextwarnCallBack,
@@ -262,14 +265,25 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
                 clipper: isAlPath ? null : CurrentPaperClipPath(_p, _type == 1),
               ),
 
-            if(_type != 0)
+            if(_type != 0 && widget.opacity != 0)
+             Opacity(
+                 opacity: widget.opacity,
+               child:  CustomPaint(
+                 size: size,
+                 painter: BookPainter(
+                   _p,
+                   widget.currentBgColor,
+                 ),
+               ),
+             ),
+            if(_type != 0 && widget.opacity == 0)
               CustomPaint(
                 size: size,
                 painter: BookPainter(
                   _p,
                   widget.currentBgColor,
                 ),
-              ),
+              )
           ],
         ),
       );
