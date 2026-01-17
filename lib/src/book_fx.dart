@@ -174,6 +174,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   bool _needstop=false;
 
   double dx=0.0;
+  bool needup=false;
 
   @override
   Widget build(BuildContext context) {
@@ -194,21 +195,18 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
         onPointerDown: (event){
           if(widget.canturn != null){
             if(widget.canturn!() == false){
+              needup=false;
               return;
             }
           }
           if(event.position.dx  < 40){
             _needstop=true;
+            needup=false;
             return;
           }
           dx=event.position.dx;
           _needstop=false;
-          _lastPointerDownPosition = event.position;
-          _isonPointerDown=false;
-          onPanDown(DragDownDetails(
-            globalPosition: event.position,
-            localPosition: event.localPosition,
-          ));
+          needup=true;
         },
         onPointerMove: (event){
           if(widget.canturn != null){
@@ -220,6 +218,16 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             return;
           }
           if(dx != 0 && event.position.dx == dx){
+            return;
+          }
+          if(needup){
+            needup=false;
+            _lastPointerDownPosition = event.position;
+            _isonPointerDown=false;
+            onPanDown(DragDownDetails(
+              globalPosition: event.position,
+              localPosition: event.localPosition,
+            ));
             return;
           }
           if(_isonPointerDown){
