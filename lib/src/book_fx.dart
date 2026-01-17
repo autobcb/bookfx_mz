@@ -173,6 +173,8 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
   bool _isonPointerDown=false;
   bool _needstop=false;
 
+  double dx=0.0;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, dimens){
@@ -199,6 +201,7 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             _needstop=true;
             return;
           }
+          dx=event.position.dx;
           _needstop=false;
           _lastPointerDownPosition = event.position;
           _isonPointerDown=false;
@@ -214,6 +217,9 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             }
           }
           if(_needstop){
+            return;
+          }
+          if(dx != 0 && event.position.dx == dx){
             return;
           }
           if(_isonPointerDown){
@@ -239,6 +245,9 @@ class _BookFxState extends State<BookFx> with SingleTickerProviderStateMixin {
             }
           }
           if(_needstop){
+            return;
+          }
+          if(dx != 0 && event.position.dx == dx){
             return;
           }
           if(_isonPointerDown){
